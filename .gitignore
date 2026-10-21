@@ -1,19 +1,56 @@
-# Virtual environment
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
 venv/
 .venv/
 env/
 
-# Python
+# Python cache and compiled files
 __pycache__/
 *.py[cod]
-*.egg-info/
-.ipynb_checkpoints/
+*$py.class
 
-# Project docs
-docs/
+# Django
+db.sqlite3
+staticfiles/
+media/
 
-# Editors / OS
+# Environment and tooling
+.python-version
+.pytest_cache/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE and editor
 .vscode/
 .idea/
+
+# Logs
+*.log
+
+# OS-generated files
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# Local secrets and certificates
+*.pem
+*.key
+
+# Generated model and cache files
+*.pt
+*.pth
+*.onnx
+*.pkl
+*.joblib
+
+# Large satellite imagery - keep source code in Git, not raw imagery
+data/raw/*.tif
+data/raw/*.tiff
