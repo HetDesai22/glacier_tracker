@@ -1,3 +1,16 @@
-from django.shortcuts import render
+from rest_framework import generics
+from .models import Glacier, AreaObservation
+from .serializers import GlacierSerializer, AreaObservationSerializer
 
-# Create your views here.
+
+class GlacierListAPIView(generics.ListAPIView):
+    queryset = Glacier.objects.all().order_by("name")
+    serializer_class = GlacierSerializer
+    
+class GlacierAreaListAPIView(generics.ListAPIView):
+    serializer_class = AreaObservationSerializer
+    
+    def get_queryset(self):
+        return AreaObservation.objects.filter(
+            glacier_id=self.kwargs["glacier_id"]
+        ).order_by("year")
