@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClimateCraft | Melting Ice Trackers</title>
     <link rel="stylesheet" href="{% static 'glaciers/dashboard.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     
@@ -26,11 +27,26 @@
         <p>Location: Himalayas, India</p>
     </section>
 
-    <section>
+    <section id="glacier-summary">
+        <h2>Loading glacier information...</h2>
+        <p id="glacier-status">Fetching data from the database.</p>
+    </section>  
+
+    
+    <section id="annual-area-section">
         <h2>Annual Glacier Area</h2>
-        <p>Annual area measurements will appear here.</p>
+        <p id="area-status">Loading annual area measurements...</p>
+
+        <div class="chart-container">
+            <canvas id="area-chart"></canvas>
+        </div>
+
+        <div id="area-results"></div>
     </section>
+
 </main>
 
+
+<script src="{% static 'glaciers/dashboard.js' %}"></script>
 </body>
 </html>
