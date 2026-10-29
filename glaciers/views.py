@@ -18,3 +18,5 @@ class GlacierAreaListAPIView(generics.ListAPIView):
         
 def dashboard(request):
     return render(request, "glaciers/dashboard.html")
+
+

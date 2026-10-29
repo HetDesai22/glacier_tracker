@@ -1,0 +1,669 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melting Ice Trackers | Glacier Intelligence</title>
+    <meta name="theme-color" content="#07111f">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg: #07111f;
+            --panel: #0e1b2b;
+            --panel2: #122337;
+            --border: #23384c;
+            --text: #eaf3fb;
+            --muted: #91a6ba;
+            --cyan: #66e0ef;
+            --blue: #579cff;
+            --green: #73e0bd;
+            --amber: #f4c777;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(ellipse at 75% 0%, #123149 0, transparent 38%),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        button, a { font: inherit; }
+
+        a { color: inherit; text-decoration: none; }
+
+        button { cursor: pointer; }
+
+        .app { min-height: 100vh; }
+
+        .sidebar {
+            width: 246px;
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 20;
+            padding: 26px 17px;
+            background: rgba(7, 17, 31, .97);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 26px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-mark {
+            width: 43px;
+            height: 43px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            color: var(--cyan);
+            border: 1px solid #2d7183;
+            background: linear-gradient(145deg, #143b50, #0c1c2b);
+            font-size: 24px;
+        }
+
+        .brand-name { font-size: 15px; font-weight: 800; letter-spacing: .7px; }
+        .brand-sub { color: var(--muted); font-size: 10px; letter-spacing: 1.7px; margin-top: 5px; }
+
+        .nav-label {
+            margin: 27px 10px 10px;
+            color: #6f879d;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin: 3px 0;
+            color: #a9bdcf;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            transition: .2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #e8fbff;
+            border-color: #234e64;
+            background: linear-gradient(90deg, #14364a, #102334);
+        }
+
+        .nav-icon { width: 20px; text-align: center; font-size: 17px; }
+        .sidebar-bottom { margin-top: auto; }
+
+        .satellite-status {
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: linear-gradient(145deg, #102439, #0b1725);
+        }
+
+        .status-line { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 10px #73e0bd70; }
+        .status-note { color: var(--muted); font-size: 11px; line-height: 1.6; margin-top: 10px; }
+
+        .main { margin-left: 246px; min-width: 0; }
+
+        .topbar {
+            min-height: 75px;
+            padding: 17px 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(7, 17, 31, .68);
+            backdrop-filter: blur(12px);
+        }
+
+        .breadcrumb { color: var(--muted); font-size: 12px; }
+        .breadcrumb strong { color: var(--text); font-weight: 600; }
+        .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        .button {
+            border: 1px solid #34516a;
+            border-radius: 8px;
+            padding: 10px 13px;
+            background: #112338;
+            color: #e3f4ff;
+            transition: .2s;
+        }
+
+        .button:hover { border-color: var(--cyan); background: #18364a; }
+        .button.primary { background: #c5f7fa; color: #06202b; border-color: #c5f7fa; font-weight: 700; }
+        .button.primary:hover { background: white; }
+
+        .content { padding: 30px 34px 40px; max-width: 1600px; margin: auto; }
+
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        h1 { font-size: clamp(28px, 3vw, 39px); letter-spacing: -1.2px; margin: 12px 0 10px; }
+        h2 { font-size: 17px; margin: 0; letter-spacing: -.2px; }
+        h3 { font-size: 14px; margin: 0; }
+        p { line-height: 1.7; }
+
+        .intro {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .intro p { max-width: 690px; margin: 0; color: var(--muted); }
+        .location-chip {
+            white-space: nowrap;
+            padding: 11px 14px;
+            border-radius: 9px;
+            background: #102538;
+            border: 1px solid #2b536b;
+            color: #b9e9f0;
+            font-size: 12px;
+        }
+
+        .grid { display: grid; gap: 16px; }
+        .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }
+
+        .panel {
+            min-width: 0;
+            background: linear-gradient(150deg, rgba(17, 35, 53, .96), rgba(11, 25, 40, .96));
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 10px 35px #00000014;
+        }
+
+        .metric-card { padding: 20px; position: relative; overflow: hidden; }
+        .metric-card:after {
+            content: "";
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            right: -35px;
+            top: -40px;
+            border: 1px solid #4f9caf25;
+            border-radius: 50%;
+            box-shadow: 0 0 0 13px #4f9caf09, 0 0 0 27px #4f9caf06;
+        }
+
+        .metric-label { color: var(--muted); font-size: 12px; }
+        .metric-value { margin-top: 16px; font-size: clamp(23px, 2.4vw, 31px); font-weight: 750; letter-spacing: -1px; }
+        .metric-foot { margin-top: 8px; color: #8da7bc; font-size: 11px; }
+        .accent { color: var(--cyan); }
+        .accent-blue { color: var(--blue); }
+        .accent-green { color: var(--green); }
+        .accent-amber { color: var(--amber); }
+
+        .section { margin-top: 19px; scroll-margin-top: 20px; }
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 20px 21px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-subtitle { color: var(--muted); font-size: 12px; margin-top: 6px; }
+        .chart-wrap { height: 350px; padding: 20px; position: relative; }
+        .chart-legend { display: flex; gap: 18px; color: var(--muted); font-size: 11px; flex-wrap: wrap; }
+        .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .legend-historical { background: var(--cyan); }
+        .legend-forecast { background: var(--blue); }
+
+        .two-col { grid-template-columns: minmax(0, 1.45fr) minmax(270px, .8fr); }
+
+        .info-body { padding: 21px; }
+        .info-body p { color: var(--muted); margin: 12px 0; font-size: 12px; }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 13px 0;
+            border-bottom: 1px solid #23384c;
+            font-size: 12px;
+        }
+
+        .info-row:last-child { border-bottom: 0; }
+        .info-row span { color: var(--muted); }
+        .info-row strong { text-align: right; }
+
+        .notice {
+            padding: 14px 16px;
+            margin-top: 16px;
+            background: #2b2517;
+            border: 1px solid #66502b;
+            color: #f3d59a;
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1.65;
+        }
+
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 560px; }
+        th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #203449; }
+        th { color: #8fa9bf; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; background: #0c1a29; }
+        td { font-size: 12px; }
+        tbody tr:hover { background: #14283b; }
+        tbody tr:last-child td { border-bottom: 0; }
+        .type-pill { padding: 5px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; }
+        .type-historical { background: #133b42; color: #85e7e9; }
+        .type-forecast { background: #172f51; color: #9bc3ff; }
+
+        .error-panel { padding: 24px; border: 1px solid #8d4545; background: #301a22; border-radius: 12px; color: #ffd6d6; }
+        .footer { padding: 22px 0 4px; color: #6f879d; font-size: 11px; display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+        .mobile-menu { display: none; }
+
+        @media (max-width: 1150px) {
+            .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 760px) {
+            .sidebar { transform: translateX(-100%); transition: transform .25s; box-shadow: 20px 0 40px #0005; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .topbar { padding: 15px 18px; }
+            .content { padding: 24px 16px; }
+            .intro { align-items: flex-start; flex-direction: column; }
+            .location-chip { white-space: normal; }
+            .chart-wrap { height: 290px; padding: 12px; }
+            .mobile-menu { display: inline-flex; }
+            .top-actions .button { padding: 9px 10px; }
+        }
+
+        @media (max-width: 430px) {
+            .metrics { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .metric-card { padding: 14px; }
+            .metric-value { font-size: 23px; }
+            .top-actions { gap: 6px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" href="{% url 'glacier_forecast:dashboard' %}">
+            <div class="brand-mark">❄</div>
+            <div>
+                <div class="brand-name">MELTING ICE</div>
+                <div class="brand-sub">GLACIER INTELLIGENCE</div>
+            </div>
+        </a>
+
+        <div class="nav-label">Monitoring</div>
+        <a class="nav-link active" href="#overview"><span class="nav-icon">⌂</span> Overview</a>
+        <a class="nav-link" href="#trend"><span class="nav-icon">⌁</span> Area & Forecast</a>
+        <a class="nav-link" href="#records"><span class="nav-icon">▤</span> Yearly Records</a>
+
+        <div class="nav-label">Analysis</div>
+        <a class="nav-link" href="#methodology"><span class="nav-icon">◎</span> Model & Methodology</a>
+        <a class="nav-link" href="#limitations"><span class="nav-icon">ⓘ</span> Research Notes</a>
+
+        <div class="sidebar-bottom">
+            <div class="satellite-status">
+                <div class="status-line"><span class="dot"></span> Dashboard operational</div>
+                <div class="status-note">
+                    Samudra Tapu Glacier<br>
+                    Indian Himalaya · Annual monitoring
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div style="display:flex;align-items:center;gap:12px">
+                <button class="button mobile-menu" id="menuToggle" aria-label="Toggle sidebar">☰</button>
+                <div class="breadcrumb">Glacier Intelligence&nbsp; / &nbsp;<strong>Monitoring Overview</strong></div>
+            </div>
+            <div class="top-actions">
+                <button class="button" id="downloadCsv">↓ Export CSV</button>
+                <button class="button primary" onclick="window.print()">Print Report ↗</button>
+            </div>
+        </header>
+
+        <div class="content" id="overview">
+            <div class="intro">
+                <div>
+                    <div class="eyebrow"><span class="dot"></span> Satellite observation workspace</div>
+                    <h1>Glacier Monitoring Console</h1>
+                    <p>
+                        Track estimated glacier area over time, inspect historical observations,
+                        and explore experimental trend projections for Samudra Tapu Glacier.
+                    </p>
+                </div>
+                <div class="location-chip">⌖ SAMUDRA TAPU GLACIER &nbsp; / &nbsp; INDIA</div>
+            </div>
+
+            {% if error %}
+                <div class="error-panel">
+                    <h2>Monitoring data unavailable</h2>
+                    <p>{{ error }}</p>
+                    <p>Check that the metrics and forecast CSV files exist and can be read by Django.</p>
+                </div>
+            {% elif data %}
+                {% with latest=data.historical|last %}
+                {% with first_forecast=data.forecast|first %}
+                {% with last_forecast=data.forecast|last %}
+
+                <section class="grid metrics">
+                    <div class="panel metric-card">
+                        <div class="metric-label">Latest estimated area</div>
+                        <div class="metric-value accent">{{ latest.area_km2|floatformat:2 }} <span style="font-size:14px">km²</span></div>
+                        <div class="metric-foot">Historical estimate · {{ latest.year }}</div>
+                    </div>
+                    <div class="panel metric-card">
+                        <div class="metric-label">Historical coverage</div>
+                        <div class="metric-value">{{ data.historical_count }} <span style="font-size:14px">years</span></div>
+                        <div class="metric-foot">Available annual observations</div>
+                    </div>
+                    <div class="panel metric-card">
+                        <div class="metric-label">Forecast horizon</div>
+                        <div class="metric-value accent-blue">{{ data.forecast_count }} <span style="font-size:14px">years</span></div>
+                        <div class="metric-foot">{{ data.forecast_start_year }}–{{ data.forecast_end_year }}</div>
+                    </div>
+                    <div class="panel metric-card">
+                        <div class="metric-label">Final forecast estimate</div>
+                        <div class="metric-value accent-amber">{{ last_forecast.area_km2|floatformat:2 }} <span style="font-size:14px">km²</span></div>
+                        <div class="metric-foot">Experimental estimate · {{ last_forecast.year }}</div>
+                    </div>
+                </section>
+
+                <section class="panel section" id="trend">
+                    <div class="section-head">
+                        <div>
+                            <h2>Glacier Area Trajectory</h2>
+                            <div class="section-subtitle">Historical model estimates and linear trend extrapolation</div>
+                        </div>
+                        <div class="chart-legend">
+                            <span><i class="legend-dot legend-historical"></i>Historical</span>
+                            <span><i class="legend-dot legend-forecast"></i>Forecast</span>
+                        </div>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="areaChart" aria-label="Glacier area by year chart"></canvas>
+                    </div>
+                </section>
+
+                <section class="grid two-col section" id="methodology">
+                    <div class="panel">
+                        <div class="section-head">
+                            <div>
+                                <h2>Observation Timeline</h2>
+                                <div class="section-subtitle">Area estimates across the monitoring period</div>
+                            </div>
+                        </div>
+                        <div class="info-body">
+                            <div class="info-row"><span>Glacier</span><strong>Samudra Tapu</strong></div>
+                            <div class="info-row"><span>Historical period</span><strong>{{ data.historical.0.year }}–{{ latest.year }}</strong></div>
+                            <div class="info-row"><span>Forecast period</span><strong>{{ data.forecast_start_year }}–{{ data.forecast_end_year }}</strong></div>
+                            <div class="info-row"><span>Historical data source</span><strong>U-Net area estimates</strong></div>
+                            <div class="info-row"><span>Forecast method</span><strong>Linear regression</strong></div>
+                            <div class="info-row"><span>Units</span><strong>Square kilometres (km²)</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-head">
+                            <div>
+                                <h2>Methodology Snapshot</h2>
+                                <div class="section-subtitle">How to interpret these outputs</div>
+                            </div>
+                        </div>
+                        <div class="info-body">
+                            <div class="info-row"><span>Segmentation</span><strong>U-Net predictions</strong></div>
+                            <div class="info-row"><span>Evaluation</span><strong>Dice / IoU / Precision / Recall</strong></div>
+                            <div class="info-row"><span>Forecast model</span><strong>Linear trend</strong></div>
+                            <p>
+                                Forecasts extend the trend in predicted area. They do not directly
+                                model temperature, precipitation, ice thickness, or glacier dynamics.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel section" id="records">
+                    <div class="section-head">
+                        <div>
+                            <h2>Annual Area Records</h2>
+                            <div class="section-subtitle">Historical estimates followed by experimental forecasts</div>
+                        </div>
+                        <button class="button" id="scrollTop">↑ Back to top</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Record type</th>
+                                    <th>Estimated area (km²)</th>
+                                    <th>Change from previous year (km²)</th>
+                                    <th>Source</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in data.combined %}
+                                <tr>
+                                    <td><strong>{{ item.year }}</strong></td>
+                                    <td>
+                                        {% if item.type == "historical" %}
+                                            <span class="type-pill type-historical">HISTORICAL</span>
+                                        {% else %}
+                                            <span class="type-pill type-forecast">FORECAST</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.area_km2|floatformat:2 }}</td>
+                                    <td>
+                                        {% if item.change_km2 is not None %}
+                                            {{ item.change_km2|floatformat:2 }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.source }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="section" id="limitations">
+                    <div class="notice">
+                        <strong>Research limitation:</strong>
+                        Forecast values are experimental trend extrapolations, not scientifically
+                        validated predictions of future glacier melt. Historical area values are
+                        derived from segmentation outputs, and agreement with preliminary automated
+                        reference masks does not independently establish scientific accuracy.
+                    </div>
+                </section>
+
+                {% endwith %}
+                {% endwith %}
+                {% endwith %}
+            {% endif %}
+
+            <footer class="footer">
+                <span>MELTING ICE TRACKERS · Glacier Monitoring Prototype</span>
+                <span>Satellite-derived analysis · Research use</span>
+            </footer>
+        </div>
+    </main>
+</div>
+
+{% if data %}
+    {{ data.combined|json_script:"glacier-data" }}
+{% endif %}
+
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const menuToggle = document.getElementById("menuToggle");
+
+    if (menuToggle) {
+        menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
+    }
+
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.addEventListener("click", () => {
+            document.querySelectorAll(".nav-link").forEach(item => item.classList.remove("active"));
+            link.classList.add("active");
+            sidebar.classList.remove("open");
+        });
+    });
+
+    const topButton = document.getElementById("scrollTop");
+    if (topButton) {
+        topButton.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    }
+
+    const downloadButton = document.getElementById("downloadCsv");
+    if (downloadButton) {
+        downloadButton.addEventListener("click", () => {
+            const dataElement = document.getElementById("glacier-data");
+            if (!dataElement) {
+                alert("No glacier data is available to export.");
+                return;
+            }
+
+            const rows = JSON.parse(dataElement.textContent);
+            const headers = ["year", "type", "area_km2", "change_km2", "source"];
+            const escapeCsv = value => {
+                const text = value === null || value === undefined ? "" : String(value);
+                return '"' + text.replace(/"/g, '""') + '"';
+            };
+
+            const csv = [
+                headers.join(","),
+                ...rows.map(row => headers.map(key => escapeCsv(row[key])).join(","))
+            ].join("\r\n");
+
+            const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "samudra_tapu_glacier_records.csv";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    const dataElement = document.getElementById("glacier-data");
+    const chartCanvas = document.getElementById("areaChart");
+
+    if (dataElement && chartCanvas && window.Chart) {
+        const rows = JSON.parse(dataElement.textContent);
+        const labels = rows.map(row => row.year);
+        const historical = rows.map(row => row.type === "historical" ? row.area_km2 : null);
+        const forecast = rows.map(row => row.type === "forecast" ? row.area_km2 : null);
+
+        const ctx = chartCanvas.getContext("2d");
+        const fill = ctx.createLinearGradient(0, 0, 0, 350);
+        fill.addColorStop(0, "rgba(102, 224, 239, 0.20)");
+        fill.addColorStop(1, "rgba(102, 224, 239, 0.00)");
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: "Historical estimate",
+                        data: historical,
+                        borderColor: "#66e0ef",
+                        backgroundColor: fill,
+                        fill: true,
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: "#66e0ef",
+                        tension: 0.25,
+                        spanGaps: false
+                    },
+                    {
+                        label: "Experimental forecast",
+                        data: forecast,
+                        borderColor: "#579cff",
+                        backgroundColor: "rgba(87, 156, 255, 0.06)",
+                        borderDash: [7, 5],
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: "#579cff",
+                        fill: false,
+                        tension: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: "#081421",
+                        borderColor: "#34516a",
+                        borderWidth: 1,
+                        titleColor: "#eaf3fb",
+                        bodyColor: "#b8cad9",
+                        padding: 12,
+                        callbacks: {
+                            label: context => context.dataset.label + ": " +
+                                (context.parsed.y === null ? "—" : context.parsed.y.toFixed(2) + " km²")
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: "rgba(145, 166, 186, 0.08)" },
+                        ticks: { color: "#91a6ba", maxRotation: 0, autoSkip: true },
+                        border: { color: "#294055" }
+                    },
+                    y: {
+                        title: { display: true, text: "Estimated area (km²)", color: "#91a6ba" },
+                        grid: { color: "rgba(145, 166, 186, 0.10)" },
+                        ticks: { color: "#91a6ba" },
+                        border: { color: "#294055" },
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
